@@ -5,7 +5,7 @@
 
 const int led_pin = 13;			// default to pin 13
 boolean IS_OPEN_STATE = false;
-int SEVEN_HOURS = 10;
+int SEVEN_HOURS = 25200;
 int open_count = SEVEN_HOURS; //7h
 
 Servo myservo;  // create servo object to control a servo
@@ -44,9 +44,23 @@ boolean isBoxOpen() {
   Serial.print(distance);  //输出距离
   Serial.println("cm");  //输出单位
   if(20<distance && distance<1000){
-    Serial.println("BoxOpen");
-    open_count = SEVEN_HOURS;
-    return true;
+    delay(50);
+    digitalWrite(trigpin,LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigpin,HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigpin,LOW); //发一个10ms的高脉冲去触发TrigPin
+    float distance = pulseIn(echopin,HIGH);//接收高电平时间
+    distance = distance/58.0;//计算距离
+    Serial.print(distance);  //输出距离
+    if(20<distance && distance<1000){
+      Serial.println("BoxOpen");
+      open_count = SEVEN_HOURS;
+      return true;
+    }else{
+      Serial.println("Box not Open");
+      return false;
+    }
   }else{
     Serial.println("Box not Open");
     return false;
@@ -56,13 +70,14 @@ boolean isBoxOpen() {
 void setLock(boolean is_lock) {
   if (!isBoxOpen()&&is_lock) {
     // lock
+    delay(3000);
     Serial.println("lock");
-    myservo.write(135);
+    myservo.write(65);
     delay(15);
   }else{
     // open
     Serial.println("unlock");
-    myservo.write(45);
+    myservo.write(135);
     delay(15);
   }
 }
